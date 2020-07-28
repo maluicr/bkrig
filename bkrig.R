@@ -114,7 +114,7 @@ write.table(mask, file = fmsk, append = T, row.names = F, col.names = F)
 phab = 10^4 
 
 # dgs observed data
-dgs = read.table("dgsData20200601.txt", header = T, sep = ",", dec = ".", strip.white = T )
+dgs = read.table("codigo/dgsData20200601.txt", header = T, sep = ",", dec = ".", strip.white = T )
 names(dgs) = c("nome_cc", "casos")
 
 # merge dgs with pop data
@@ -174,9 +174,7 @@ cat(namevars, file = fnot, sep="\n", append = T)
 write.table(format(tabnotf, digits = NULL, justify = "right"),
             file = fnot, quote = F, append = T, row.names = F, col.names = F)
 
-# ------ experimental variograms -------
-
-# get vectors
+# ------ experimental variogram : get data -------
 
 # incidence rates
 rate = tab_all$rate
@@ -185,34 +183,41 @@ ratexy = cbind(tab_all$x, tab_all$y)
 # population
 pop = tab_all$popres18 
 
-# calculate distances
+# ------ experimental variogram : calc distances -------
 
 # lag distance
-lagd = 10000
+lagd = 7000
 # lags up to
 lagend = 100000
 # nr lags
-lag_n = floor(lagend / lagd) + 1
+lagn = floor(lagend / lagd) + 1
 # vector of lags
 lags = c()
-for (i in 1:lag_n) {
+for (i in 1:lagn) {
   lags[i] = lagd * i - lagd  
 }
+
 # compute distance matrix
 matd = as.matrix(dist(ratexy))
 
-# calculate experimental variogram 
+# ------ experimental variogram: create vectors to store results -------
 
-# create vectors to store results
-nh = vector( mode = "integer", length = (lag_n-1)) # n pairs dist(h)
-dh = vector( mode = "numeric", length = (lag_n-1)) # total dist(h)
-mh = vector( mode = "numeric", length = (lag_n-1)) # mean dist(h)
-num_gh = vector( mode = "numeric", length = (lag_n-1)) # numerator gamma(h)
-den_gh = vector( mode = "numeric", length = (lag_n-1)) # denominator gamma(h)
-gammah = vector( mode = "numeric", length = (lag_n-1)) # gamma(h)
+# n pairs dist(h)
+nh = vector( mode = "integer", length = (lagn-1)) 
+# total dist(h)
+dh = vector( mode = "numeric", length = (lagn-1)) 
+# mean dist(h)
+mh = vector( mode = "numeric", length = (lagn-1)) 
+# numerator gamma(h)
+num_gh = vector( mode = "numeric", length = (lagn-1)) 
+# denominator gamma(h)
+den_gh = vector( mode = "numeric", length = (lagn-1)) 
+# gamma(h)
+gammah = vector( mode = "numeric", length = (lagn-1)) 
 
-# compute variogram
-for (k in 1:(lag_n-1)) {
+# ------ experimental variogram: compute -------
+
+for (k in 1:(lagn-1)) {
   for (i in 1:nobs) {
     for (j in 1:nobs) {
       if(matd[i,j] > lags[k] & matd[i,j] <= lags[k+1]){
@@ -227,101 +232,53 @@ for (k in 1:(lag_n-1)) {
   mh[k] = dh[k] / nh[k]
 }
 
-plot(mh,gammah)
-  
+# plot
+plot(mh,  gammah, ylab = expression(paste(gamma, "(h)")), xlab = "h (in m)")
 
-  
+# ------ variogram model: estimate sill -------
 
-variance=0
-poptotal=0
+# no ref about this sill estimation
+# looked in goovaerts, cressie, journel
+# used fortran code from mjp
 
-varw=pop(i)*pop(i)/(pop(i)+pop(i))
-varp=varw*((racio(i)-media)**2)
-poptotal=poptotal+varw
-variance=variance+varp
-do j=1, nobs
-dist(i,j)=sqrt((coordx(i)-coordx(j))**2+(coordy(i)-coordy(j))**2)
-w(i,j)=pop(i)*pop(j)/(pop(i)+pop(j))
-gama1(i,j)=w(i,j)*((racio(i)-racio(j))**2)
-write(30,*) i, j, dist(i,j), w(i,j), gama1(i,j)
-end do
-end do
+# create integer num & den to calc weighted sample var
+nwsv = 0
+dwsv = 0
 
-variance=variance/poptotal
-
-lag=5000
-nv=20
-do k=1,nv
-nh(k)=0
-soma1(k)=0
-soma2(k)=0
-distot(k)=0
-end do
-
-do i=1,nobs
-do j=1,nobs
-do k=1,nv
-if ((dist(i,j)<=(lag*k)) .and. (dist(i,j)>lag*(k-1))) nh(k)=nh(k)+1
-if ((dist(i,j)<=(lag*k)) .and. (dist(i,j)>lag*(k-1))) soma1(k)=soma1(k)+gama1(i,j)
-if ((dist(i,j)<=(lag*k)) .and. (dist(i,j)>lag*(k-1))) distot(k)=distot(k)+dist(i,j)
-if ((dist(i,j)<=(lag*k)) .and. (dist(i,j)>lag*(k-1))) soma2(k)=soma2(k)+w(i,j)
-end do          
-end do
-end do
-
-write(20,*) variance
-do k=1,nv
-distot(k)=distot(k)/nh(k)
-gama2(k)=(1/(2*soma2(k)))*soma1(k)
-write(20,*) nh(k)/2, distot(k), gama2(k)
-end do
-
-
-# ------ create vector kriging pars -------
-
-exampleFunction<-function(A=1,B=c(3,4)){
-  return(unionvector=c(A,B))
-} 
-exampleFunction()
-
-function (models = c("Exp", "Sph"), pepita = 0, range = 60000, psill= c()) {
-  for (i in 1:models) {
-    
-    
-  }
+# calc num and denominator 
+for (i in 1:nobs){
+  nwsv = nwsv + pop[i]^2 / (2 * pop[i]) * (rate[i] - m)^2
+  dwsv = dwsv + pop[i]^2 / (2 * pop[i])
 }
 
-# only exponential and spherical model are implemented for now!
-# functions are incomplete -> not defined for values h=0 and h > range
-# to add.
+wsvar = nwsv / dwsv
 
-spatcov = function(mod = c("Sph", "Exp"), nug = 0, C = 1, r = 1, mat){
-  if(!is.matrix(mat)) stop("mat must be a matrix")
-  dmat0=mat[-1,-1] # c[z(x)-z(x+h)]
-  dmat1=mat[-1,1]  # c[z(x)-z(0)]
-  n_0=nrow(dmat0)
-  if (mod=="Sph"){
-    c=matrix(nug+C*(1-1.5*(dmat0/r)-0.5*(dmat0/r)^3),nrow=n_0)
-    c0=matrix(nug+C*(1-1.5*(dmat1/r)-0.5*(dmat1/r)^3),nrow=n_0)
-  } else if (mod=="Exp"){
-    c=matrix(nug+C*(exp(-3*dmat0/r)),nrow=n_0)
-    c0=matrix(nug+C*(exp(-3*dmat1/r)),nrow=n_0)
-  } else {
-    stop("Covariance model must be 'Sph' or 'Exp'")
+# ------ variogram model : manual fit -------
+
+# set function varm() for variogram models
+varm = function (mod = c("Exp", "Sph"), nug = 0, ran = 60000, sill= 500) {
+  x = seq(1, ran , 1)
+  xmax = seq(1, 3 * ran / 2, 1)
+  if (mod=="Sph") {
+    model = nug + sill * (1.5 * (x / ran) - 0.5 * (x / ran)^3)
+    cutoff = max(xmax) - ran
+    msill = rep(nug + sill, cutoff )
+    model = c(0, model, msill)
+    }
+  if (mod=="Exp") {
+    model = nug + sill * (1 - exp(- 3 * xmax / ran))
+    model = c(0, model)
   }
-  matK=rbind(c,1)
-  matK=cbind(matK,1)
-  ndim=dim(matK) 
-  matK[ndim,ndim]=0
-  matK=round(matK,3)
-  matM=c(c0,1)
-  matM=matrix(matM,ncol=1)
-  matM=(round(matM,3))
-  x=list(covK=matK,covM=matM)
-  return(x)
-}
+  return(model)
+  }
 
-spcov=spatcov(mod="Exp",C=10,r=10,mat=dmat)
+# set model pars
+modt = varm(mod = "Exp", nug = 0, ran = 65000, sill = wsvar)
+
+# plot experimental + model
+plot(mh,  gammah, ylab = expression(paste(gamma, "(h)")), xlab = "h (in m)")
+lines(modt)
+abline(h = wsvar, col ="red", lty = 2)
 
 # ------ write blocksfile for dss ------
 
