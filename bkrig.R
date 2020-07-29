@@ -9,7 +9,17 @@ library(sp)
 library(rgdal)
 library(tidyverse)
 
-# ---- folder to store results -----
+# ---- folder to store inputs -----
+
+foldin = "input"
+
+# create folder for inputs
+if(!file.exists(foldin)) dir.create(foldin, recursive=T)  
+
+# store string with path for input files
+wkin = paste0(getwd(), "/", foldin)
+
+# ---- folder to store outputs -----
 
 day = 20200601
 
@@ -31,12 +41,13 @@ wkdirout = paste0(getwd(), "/", sout, "/sim")
 
 # ----- shapefile cmassa concelhos pop 2018 -----
 
-shp = readOGR(dsn = "gis","cc_pt_cmassa_fr_popres",encoding = "UTF-8", use_iconv = T)
+shp = readOGR(dsn = "gis","cc_pt_cmassa_fr_popres", encoding = "UTF-8", use_iconv = T)
 names(shp@data) = c("x", "y", "objectid", "nome_cc", "cod",  "popres18")
 
-# dss need z coordinate 3d
+# add z coordinate, dss needs 3d coords
 shp@data$z = 0
 
+# convert to dataframe named pop
 pop = as.data.frame(shp@data)
 pop$popres18 = as.numeric(as.character(pop$popres18))
 pop$objectid = as.numeric(as.character(pop$objectid))
@@ -97,7 +108,7 @@ nval = length(mask)
 # create file path
 msk_name = "mask"
 msk_nameO = paste0(msk_name, ".out")
-fmsk = paste0(wkdir, msk_nameO)
+fmsk = paste0(wkin,"/", msk_nameO)
 
 if (file.exists(fmsk)){
   file.remove(fmsk)
@@ -145,7 +156,7 @@ tab_all$rate = phab * tab_all$casos / tab_all$popres18
 
 tabela = tab_all[, c("objectid", "x", "y", "z", "rate", "error")]
 
-# ------ write datafile for dss ------
+# ------ write notified for dss ------
 
 # prepare data to write file  
 tabnotf = tabela[, c("x", "y", "z", "rate")]
@@ -162,7 +173,7 @@ namevars = names(tabnotf)
 # create file path
 not_name = "notified"
 not_nameO = paste0(not_name, ".out")
-fnot = paste0(wkdir, not_nameO)
+fnot = paste0(wkin, "/", sid, not_nameO)
 
 if (file.exists(fnot)){
   file.remove(fnot)  
@@ -299,7 +310,7 @@ massn = length(massid)
 # create file path
 blk_name = "blockdata"
 blk_nameO = paste0(blk_name,".out")
-fblk = paste0(wkdir, blk_nameO)
+fblk = paste0(wkin, "/", sid, blk_nameO)
 
 if (file.exists(fblk)){
   file.remove(fblk)  
@@ -311,7 +322,7 @@ file.create(fblk)
 # write file header
 cat(blk_name, file = fblk, sep="\n")
 cat(massn, file = fblk, sep="\n", append = T)
-cat(namevars, file = fnot, sep="\n", append = T)
+cat(namevars, file = fblk, sep="\n", append = T)
 
 t0 = Sys.time()
 
@@ -354,7 +365,7 @@ t1-t0
 # ------ write ssdir.par for dss ------
 
 # store number of simulations
-nsim = 100
+nsim = 3
 # store nr simulations for bias correction
 nbias = 20
 # store flag for (mean, var) correction (yes = 1, no = 0)
@@ -410,7 +421,7 @@ pseudon = sample(10^8,1)
 # create file path
 ssd_name = "ssdir"
 ssd_nameO = paste0(ssd_name, ".par")
-fssd = paste0(wkdir, ssd_nameO)
+fssd = paste0(wkin, "/", ssd_nameO)
 
 if (file.exists(fssd)){
   file.remove(fssd)  
@@ -418,11 +429,6 @@ if (file.exists(fssd)){
 
 # create notification file
 file.create(fssd)
-
-# write file header
-cat(not_name, file = fnot, sep="\n")
-cat(nvars, file = fnot, sep="\n", append = T)
-cat(namevars, file = fnot, sep="\n", append = T)
 
 cat("#*************************************************************************************#", file = fssd, sep = "\n", append = T)
 cat("#                                                                                     #", file = fssd, sep = "\n", append = T)
@@ -440,7 +446,7 @@ cat("#--------------------------------------------------------------------------
 
 cat("\n", file = fssd, append = T)
 cat("[ZONES]", file = fssd, sep = "\n", append = T)
-cat(paste0("ZONESFILE = ", msk_nameO), file = fssd, sep = "\n", append = T)
+cat(paste0("ZONESFILE = ", fmsk), file = fssd, sep = "\n", append = T)
 cat(paste0("NZONES = ", mask_zones), file = fssd, sep = "\n", append = T)
 cat("", file = fssd, sep = "\n", append = T)
 
@@ -533,9 +539,9 @@ searchpars = function (ndMin = 1, ndMax = 32, nodMax = 12,
 # set search pars using searchpars function
 schpar = searchpars()
 # min nr of observed samples
-cat(paste0("NDMIN  = ", schpar()[1]), file = fssd, sep = "\n", append = T)
+cat(paste0("NDMIN  = ", schpar[1]), file = fssd, sep = "\n", append = T)
 # max nr of observed samples
-cat(paste0("NDMAX  = ", schpar()[2]), file = fssd, sep = "\n", append = T)
+cat(paste0("NDMAX  = ", schpar[2]), file = fssd, sep = "\n", append = T)
 # max nr of previouly simulated nodes
 cat(paste0("NODMAX = ", schpar[3]), file = fssd, sep = "\n", append = T)
 # Two-part search / data nodes flag
@@ -657,7 +663,7 @@ cat("[DEBUG]", file = fssd, sep = "\n", append = T)
 # 1 to 3, use higher than 1 only if REALLY needed
 cat("DBGLEVEL = 1", file = fssd, sep = "\n", append = T)
 # File to write debug
-cat("DBGFILE   = debug.dbg ", file = fssd, sep = "\n", append = T)
+cat("DBGFILE   = debug1.dbg ", file = fssd, sep = "\n", append = T)
 
 cat("#---------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#        here we define parameters for COVARIANCE TABLE - reduce if memory is a problem       #", file = fssd, sep = "\n", append = T)
@@ -680,14 +686,13 @@ cat("[PSEUDOHARD]", file = fssd, sep = "\n", append = T)
 # 1 use, 0 no  pseudo hard data is point distributions that are simulated before all other nodes
 cat("USEPSEUDO = 0", file = fssd, sep = "\n", append = T)
 # file
-cat("PSEUDOFILE = 'no file'", file = fssd, sep = "\n", append = T)
+cat(paste0("PSEUDOFILE = ", "no file"), file = fssd, sep = "\n", append = T)
 # correct simulated value with point
 cat("PSEUDOCORR = 0", file = fssd, sep = "\n", append = T)
 
-##   RUN DSS
+# ------ run dss ------
 
-system(temp)
-temp = paste0(getwd(), "/", sid,"/", "DSS.C.64.exe  ", getwd(), "/", sid,"/", "20200601ssdir.par" )
+temp = paste0(wkin,"/", "DSS.C.64.exe  ", wkin,"/", "ssdir.par" )
 system(temp)
 
 temp = [pwd,'/',inputPath,'/DSS.C.64.exe   ',inputPath,'/ssdir.par'];
