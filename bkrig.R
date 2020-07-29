@@ -1,3 +1,9 @@
+# autor: manuel ribeiro
+# data : 02/07/2020
+# ultima revisão : 29/07/2020
+# descricao : covid-19 disease mapping with dss.exe (block-kriging)
+# email: manuel.ribeiro@tecnico.ulisboa.pt
+
 library(gstat)
 library(sp)
 library(rgdal)
@@ -269,7 +275,8 @@ varm = function (mod = c("Exp", "Sph"), nug = 0, ran = 60000, sill= 500) {
     model = nug + sill * (1 - exp(- 3 * xmax / ran))
     model = c(0, model)
   }
-  return(model)
+  pars = data.frame (model = mod, nugget = nug, range = ran, psill = sill)
+  return(list(pars, model))
   }
 
 # set model pars
@@ -277,7 +284,7 @@ modt = varm(mod = "Exp", nug = 0, ran = 65000, sill = wsvar)
 
 # plot experimental + model
 plot(mh,  gammah, ylab = expression(paste(gamma, "(h)")), xlab = "h (in m)")
-lines(modt)
+lines(modt[[2]])
 abline(h = wsvar, col ="red", lty = 2)
 
 # ------ write blocksfile for dss ------
@@ -338,16 +345,6 @@ for (i in 1 : massn){
     }
   }
   data.table::fwrite(blk_list, file = fblk, append = T, sep="\n")
-  # write x, y, z=0 coords block
-  #for (k in 1:ny) {
-  #  for(l in 1:nx){
-  #    if(gridout[k, l, 1] == id) {
-  #      d = paste0(gridout[k, l, 2], "\t", gridout[k, l, 3], "\t", 0)
-  #       cat(d , file = fblk, append = T)
-  #      cat("\n" , file = fblk, append = T)
-  #    }
-  #  }
-  # }
 }
 
 t1 = Sys.time()
@@ -408,8 +405,8 @@ pseudon = sample(10^8,1)
 #   var_out - realization
 #
 #
-# Leonardo Azevedo - 2019, Manuel Ribeiro - 2020
-# CERENA/Instituto Superior T?cnico (Portugal)
+# Leonardo Azevedo - 2019
+# CERENA/Instituto Superior Tecnico (Portugal)
 #
 
 # create file path
@@ -528,69 +525,114 @@ cat("\n\n", file = fssd, append = T)
 
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#                 here we define the parameters for search                            #", file = fssd, sep = "\n", append = T)
-cat("#------------ -------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
 cat("[SEARCH]", file = fssd, sep = "\n", append = T)
 
 # ------- data used to simulate a node -------
 
+# create function to store vector of search pars
+searchpars = function (ndMin = 1, ndMax = 32, nodMax = 12, 
+                       sstrat = 1, mults = 0, nmults = 1, noct = 0, 
+                       radius1 = as.numeric(modt[[1]][3]), 
+                       radius2 = as.numeric(modt[[1]][3]), 
+                       radius3 = 1, sang1 = 0, sang2 = 0, sang3 = 0) {
+  x = c( ndMin, ndMax, nodMax, sstrat, mults, nmults, noct, radius1,radius2, radius3, sang1, sang2, sang3)
+  return(x)
+}
+
+# set search pars using searchpars function
+schpar = searchpars()
+
 # min nr of observed samples
-cat("NDMIN   = 1", file = fssd, sep = "\n", append = T)
+cat(paste0("NDMIN  = ", schpar()[1]), file = fssd, sep = "\n", append = T)
 
 # max nr of observed samples
-cat("NDMAX   = 32", file = fssd, sep = "\n", append = T)
+cat(paste0("NDMAX  = ", schpar()[2]), file = fssd, sep = "\n", append = T)
 
 # max nr of previouly simulated nodes
-cat("NODMAX  = 12", file = fssd, sep = "\n", append = T)
+cat(paste0("NODMAX = ", schpar[3]), file = fssd, sep = "\n", append = T)
                
 # Two-part search / data nodes flag
-cat("SSTRAT  = 1", file = fssd, sep = "\n", append = T)
+cat(paste0("SSTRAT = ", schpar[4]), file = fssd, sep = "\n", append = T)
 
 # Multiple grid simulation flag
-cat("MULTS   = 0", file = fssd, sep = "\n", append = T)
+cat(paste0("MULTS  = ", schpar[5]), file = fssd, sep = "\n", append = T)
 
 # Nr of multiple grid refinements
-cat("NMULTS   = 1", file = fssd, sep = "\n", append = T)  
+cat(paste0("NMULTS = ", schpar[6]), file = fssd, sep = "\n", append = T)  
 
 # Nr of original data per octant
-cat("NOCT    = 0", file = fssd, sep = "\n", append = T)
+cat(paste0("NOCT = ", schpar[7]), file = fssd, sep = "\n", append = T)
 
 # Search radii in the major horizontal axe
-cat(paste0("RADIUS1 =", poraquiqqcoisa), file = fssd, sep = "\n", append = T)
-fprintf(fid, '#s \n',['RADIUS1 = ', num2str(krigRANGE(1,1)),'
+cat(paste0("RADIUS1 = ", schpar[8]), file = fssd, sep = "\n", append = T)
 
-# Search radii in the minimum horizontal direction']);
-fprintf(fid, '#s \n',['RADIUS2 = ', num2str(krigRANGE(1,2)),'
+# Search radii in the major horizontal axe
+cat(paste0("RADIUS2 = ", schpar[9]), file = fssd, sep = "\n", append = T)
 
-# Search radii in the vertical direction']);
-fprintf(fid, '#s \n',['RADIUS3 = ', num2str(krigRANGE(1,3)),'
+# Search radii in the major horizontal axe
+cat(paste0("RADIUS3 = ", schpar[10]), file = fssd, sep = "\n", append = T)
 
-# Orientation angle parameter of direction I (degrees)']);
-fprintf(fid, '#s \n',['SANG1   = ', num2str(krigANG(1,1)),' 
+# Orientation angle parameter of direction I (degrees)
+cat(paste0("SANG1 = ", schpar[11]), file = fssd, sep = "\n", append = T)
 
-# Orientation angle parameter of direction II (degrees)']);
-fprintf(fid, '#s \n',['SANG2   = ', num2str(krigANG(1,2)),'  
+# Orientation angle parameter of direction II (degrees)
+cat(paste0("SANG2 = ", schpar[12]), file = fssd, sep = "\n", append = T)
 
-# Orientation angle parameter of direction III (degrees)']);
-fprintf(fid, '#s \n',['SANG3   = ', num2str(krigANG(1,3)),'  
+# Orientation angle parameter of direction III (degrees)
+cat(paste0("SANG3 = ", schpar[13]), file = fssd, sep = "\n", append = T)
+
+cat("\n\n", file = fssd, append = T)
+
+cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#   here we define the kriging information, and secondary info when applicable        #", file = fssd, sep = "\n", append = T)
+cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+# create function to store vector of search pars
+kriginfo = function (ktype = 0, colorcorr = 0, softfile = "no file", lvmfile = "no file", 
+                     nvaril = 1, icollvm = 1, ccfile = "no file", rescale = 0) {
+  x = data.frame( ktype, colorcorr, softfile, lvmfile, nvaril, icollvm, ccfile, rescale)
+  return(x)
+}
+
+kinfo = kriginfo ()
+
+cat("[KRIGING]", file = fssd, sep = "\n", append = T)
+
+# Kriging type: 0 = simple, 1 = ordinary, 2 = simple with locally varying mean
+# 3 = external drift, 4 = collo-cokrig global CC, 5 = local CC
+cat(paste0("KTYPE = ", kinfo[1,1]), file = fssd, sep = "\n", append = T)
+
+# Global coef correlation (ktype = 4)
+cat(paste0("COLOCORR = ", kinfo[1,2]), file = fssd, sep = "\n", append = T)
+
+# Filename of the soft data (ktype = 2)
+cat(paste0("SOFTFILE = ", kinfo[1,3]), file = fssd, sep = "\n", append = T)
+
+# For ktype = 2
+cat(paste0("LVMFILE  = ", kinfo[1,4]), file = fssd, sep = "\n", append = T)
+
+# Number of columns in the secundary data file
+cat(paste0("NVARIL  = ", kinfo[1,5]), file = fssd, sep = "\n", append = T)
+
+# Column number of secundary variable 
+cat(paste0("ICOLLVM  = ", kinfo[1,6]), file = fssd, sep = "\n", append = T)
+
+# Filename of correlation file for local correlations (ktype = 5)
+cat(paste0("CCFILE  = ", kinfo[1,7]), file = fssd, sep = "\n", append = T)
+
+# Rescale secondary variable (for ktype >= 4)
+cat(paste0("RESCALE  = ", kinfo[1,8]), file = fssd, sep = "\n", append = T)
+
+cat("\n\n", file = fssd, append = T)
+
+cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#        here we define the variogram to use. if more than 1, use [VARIOGRAM2]        #", file = fssd, sep = "\n", append = T)
+cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
 
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','# here we define the kriging information, and secondary info when applicable');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','[KRIGING]');
-fprintf(fid, '#s \n',['KTYPE        = ', num2str(krigType),'                # Kriging type ;0=simple,1=ordinary,2=simple with locally varying mean,']);
-fprintf(fid, '#s \n','# 3=external drif, 4=collo-cokrig global CC,5=local CC (KTYPE)');
-fprintf(fid, '#s \n',['COLOCORR     = ', num2str(globalCorr),'                # Global CC to ktype=4 ']);
-fprintf(fid, '#s \n',['SOFTFILE     = ', secVar,'                                  # Filename of the soft data']);
-fprintf(fid, '#s \n',['LVMFILE      = ', lvmFile,'                                 # FOR KTYPE=2']);
-fprintf(fid, '#s \n','NVARIL        = 1                                             # Number of columns in the secundary data file');
-fprintf(fid, '#s \n','ICOLLVM       = 1                                             # Column number of secundary variable ');
-fprintf(fid, '#s \n',['CCFILE       = ', localCorr,'                               # Filename of correlation file for local correlations (ktype=5)']);
-fprintf(fid, '#s \n',['RESCALE      = ', num2str(rescale),'                         # rescale secondary variable (for ktype>=4)']);
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','# here we define the variogram to use. if more than 1, use [VARIOGRAM2]');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
+
 for n=1:noZones
 fprintf(fid, '#s \n',['[VARIOGRAMZ',num2str(n),']']);
 fprintf(fid, '#s \n',['NSTRUCT  = ',num2str(size(varRANGE,2)/4),'                # Number of semivariograms structures (NST(1))']);
