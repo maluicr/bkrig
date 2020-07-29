@@ -276,7 +276,8 @@ varm = function (mod = c("Exp", "Sph"), nug = 0, ran = 60000, sill= 500) {
     model = c(0, model)
   }
   pars = data.frame (model = mod, nugget = nug, range = ran, psill = sill)
-  return(list(pars, model))
+  nstruc = 1 # for now only 1 (Spherical or Exponential)
+  return(list(nstructures = nstruc, parameters = pars, gammaval = model))
   }
 
 # set model pars
@@ -284,7 +285,7 @@ modt = varm(mod = "Exp", nug = 0, ran = 65000, sill = wsvar)
 
 # plot experimental + model
 plot(mh,  gammah, ylab = expression(paste(gamma, "(h)")), xlab = "h (in m)")
-lines(modt[[2]])
+lines(modt[[3]])
 abline(h = wsvar, col ="red", lty = 2)
 
 # ------ write blocksfile for dss ------
@@ -354,13 +355,10 @@ t1-t0
 
 # store number of simulations
 nsim = 100
-
 # store nr simulations for bias correction
 nbias = 20
-
 # store flag for (mean, var) correction (yes = 1, no = 0)
 biascor = c(1,1)
-
 # draw pseudo-random value 
 pseudon = sample(10^8,1)
 
@@ -475,22 +473,16 @@ cat("#--------------------------------------------------------------------------
 cat("#                here we define parameters for the simulation                         #", file = fssd, sep = "\n", append = T)
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
-cat("\n", file = fssd, append = T)
 cat("[SIMULATION]", file = fssd, sep = "\n", append = T)
-
 cat(paste0("OUTFILE = ", wkdirout), file = fssd, sep = "\n", append = T)
 cat(paste0("NSIMS = ", nsim), file = fssd, sep = "\n", append = T)
 cat(paste0("NTRY = ", nbias), file = fssd, sep = "\n", append = T)
 cat(paste0("AVGCORR = ", biascor[1]), file = fssd, sep = "\n", append = T)
 cat(paste0("VARCORR = ", biascor[2]), file = fssd, sep = "\n", append = T)
 
-cat("\n", file = fssd, sep = "\n", append = T)
-
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#        here we define the output grid (and secondary info grid)                     #", file = fssd, sep = "\n", append = T)
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
-
-cat("\n", file = fssd, append = T)
 
 cat("[GRID]", file = fssd, sep = "\n", append = T)
 cat("# NX, NY and NZ are the number of blocks per direction", file = fssd, sep = "\n", append = T)
@@ -515,13 +507,10 @@ cat("#                 here we define some general parameters                   
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
 cat("[GENERAL]", file = fssd, sep = "\n", append = T)
-
 cat(paste0("NULLVAL = ", nas), file = fssd, sep = "\n", append = T)
 cat(paste0("SEED = ", pseudon), file = fssd, sep = "\n", append = T)
 cat("USEHEADERS = 1", file = fssd, sep = "\n", append = T)
 cat("FILETYPE = GEOEAS", file = fssd, sep = "\n", append = T)
-
-cat("\n\n", file = fssd, append = T)
 
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#                 here we define the parameters for search                            #", file = fssd, sep = "\n", append = T)
@@ -529,13 +518,13 @@ cat("#--------------------------------------------------------------------------
 
 cat("[SEARCH]", file = fssd, sep = "\n", append = T)
 
-# ------- data used to simulate a node -------
+# ------- ssdir.par: search parameters -------
 
 # create function to store vector of search pars
 searchpars = function (ndMin = 1, ndMax = 32, nodMax = 12, 
                        sstrat = 1, mults = 0, nmults = 1, noct = 0, 
-                       radius1 = as.numeric(modt[[1]][3]), 
-                       radius2 = as.numeric(modt[[1]][3]), 
+                       radius1 = as.numeric(modt[[2]][3]), 
+                       radius2 = as.numeric(modt[[2]][3]), 
                        radius3 = 1, sang1 = 0, sang2 = 0, sang3 = 0) {
   x = c( ndMin, ndMax, nodMax, sstrat, mults, nmults, noct, radius1,radius2, radius3, sang1, sang2, sang3)
   return(x)
@@ -543,51 +532,38 @@ searchpars = function (ndMin = 1, ndMax = 32, nodMax = 12,
 
 # set search pars using searchpars function
 schpar = searchpars()
-
 # min nr of observed samples
 cat(paste0("NDMIN  = ", schpar()[1]), file = fssd, sep = "\n", append = T)
-
 # max nr of observed samples
 cat(paste0("NDMAX  = ", schpar()[2]), file = fssd, sep = "\n", append = T)
-
 # max nr of previouly simulated nodes
 cat(paste0("NODMAX = ", schpar[3]), file = fssd, sep = "\n", append = T)
-               
 # Two-part search / data nodes flag
 cat(paste0("SSTRAT = ", schpar[4]), file = fssd, sep = "\n", append = T)
-
 # Multiple grid simulation flag
 cat(paste0("MULTS  = ", schpar[5]), file = fssd, sep = "\n", append = T)
-
 # Nr of multiple grid refinements
 cat(paste0("NMULTS = ", schpar[6]), file = fssd, sep = "\n", append = T)  
-
 # Nr of original data per octant
 cat(paste0("NOCT = ", schpar[7]), file = fssd, sep = "\n", append = T)
-
 # Search radii in the major horizontal axe
 cat(paste0("RADIUS1 = ", schpar[8]), file = fssd, sep = "\n", append = T)
-
 # Search radii in the major horizontal axe
 cat(paste0("RADIUS2 = ", schpar[9]), file = fssd, sep = "\n", append = T)
-
 # Search radii in the major horizontal axe
 cat(paste0("RADIUS3 = ", schpar[10]), file = fssd, sep = "\n", append = T)
-
 # Orientation angle parameter of direction I (degrees)
 cat(paste0("SANG1 = ", schpar[11]), file = fssd, sep = "\n", append = T)
-
 # Orientation angle parameter of direction II (degrees)
 cat(paste0("SANG2 = ", schpar[12]), file = fssd, sep = "\n", append = T)
-
 # Orientation angle parameter of direction III (degrees)
 cat(paste0("SANG3 = ", schpar[13]), file = fssd, sep = "\n", append = T)
-
-cat("\n\n", file = fssd, append = T)
 
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#   here we define the kriging information, and secondary info when applicable        #", file = fssd, sep = "\n", append = T)
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+# ------- ssdir.par: krige info -------
 
 # create function to store vector of search pars
 kriginfo = function (ktype = 0, colorcorr = 0, softfile = "no file", lvmfile = "no file", 
@@ -599,92 +575,121 @@ kriginfo = function (ktype = 0, colorcorr = 0, softfile = "no file", lvmfile = "
 kinfo = kriginfo ()
 
 cat("[KRIGING]", file = fssd, sep = "\n", append = T)
-
 # Kriging type: 0 = simple, 1 = ordinary, 2 = simple with locally varying mean
 # 3 = external drift, 4 = collo-cokrig global CC, 5 = local CC
 cat(paste0("KTYPE = ", kinfo[1,1]), file = fssd, sep = "\n", append = T)
-
 # Global coef correlation (ktype = 4)
 cat(paste0("COLOCORR = ", kinfo[1,2]), file = fssd, sep = "\n", append = T)
-
 # Filename of the soft data (ktype = 2)
 cat(paste0("SOFTFILE = ", kinfo[1,3]), file = fssd, sep = "\n", append = T)
-
 # For ktype = 2
 cat(paste0("LVMFILE  = ", kinfo[1,4]), file = fssd, sep = "\n", append = T)
-
 # Number of columns in the secundary data file
 cat(paste0("NVARIL  = ", kinfo[1,5]), file = fssd, sep = "\n", append = T)
-
 # Column number of secundary variable 
 cat(paste0("ICOLLVM  = ", kinfo[1,6]), file = fssd, sep = "\n", append = T)
-
 # Filename of correlation file for local correlations (ktype = 5)
 cat(paste0("CCFILE  = ", kinfo[1,7]), file = fssd, sep = "\n", append = T)
-
 # Rescale secondary variable (for ktype >= 4)
 cat(paste0("RESCALE  = ", kinfo[1,8]), file = fssd, sep = "\n", append = T)
-
-cat("\n\n", file = fssd, append = T)
 
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#        here we define the variogram to use. if more than 1, use [VARIOGRAM2]        #", file = fssd, sep = "\n", append = T)
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
+# ------- ssdir.par: variogram models -------
 
+for (j in 1:mask_zones) {
+  cat(paste0("[VARIOGRAMZ", j, "]"), file = fssd, sep = "\n", append = T)
+  cat(paste0("NSTRUCT = ", modt[[1]]), file = fssd, sep = "\n", append = T)
+  cat(paste0("NUGGET = ", as.numeric(modt[[2]][2])), file = fssd, sep = "\n", append = T)
+  for (i in 1:modt[[1]]){
+    cat(paste0("[VARIOGRAMZ", j, "S", i, "]"), file = fssd, sep = "\n", append = T)
+    # store struture type ; 1 = spherical, 2 = exponential
+    mtype = as.numeric(ifelse(modt[[2]][1] == "Exp", 2 , 1))
+    cat(paste0("TYPE = ", mtype), file = fssd, sep = "\n", append = T)
+    # C parameter "COV + NUGGET = 1.0" (CC(i))
+    cat("COV = 1", file = fssd, sep = "\n", append = T)
+    # Geometric anisotropy angle I (ANG1(i))
+    cat("ANG1 = 0", file = fssd, sep = "\n", append = T)
+    # Geometric anisotropy angle II (ANG2(i))
+    cat("ANG2 = 0", file = fssd, sep = "\n", append = T)
+    # Geometric anisotropy angle III (ANG3(i))
+    cat("ANG3 = 0", file = fssd, sep = "\n", append = T)
+    # Maximum horizontal range (AA(i))
+    cat(paste0("AA = ", modt[[2]][3]), file = fssd, sep = "\n", append = T)
+    # Minimum horizontal range (AA1)
+    cat(paste0("AA1 = ", modt[[2]][3]), file = fssd, sep = "\n", append = T)
+    # Vertical range (AA2)
+    cat("AA2 = 1", file = fssd, sep = "\n", append = T)
+  }
+}
 
-for n=1:noZones
-fprintf(fid, '#s \n',['[VARIOGRAMZ',num2str(n),']']);
-fprintf(fid, '#s \n',['NSTRUCT  = ',num2str(size(varRANGE,2)/4),'                # Number of semivariograms structures (NST(1))']);
-fprintf(fid, '#s \n',['NUGGET    =', num2str(varNugget(n,1)),'                                               # Nugget constant (C0(1))']);
-for i=1:size(varRANGE,2)/4
-fprintf(fid, '#s \n',['[VARIOGRAMZ',num2str(n),'S',num2str(i),']']);
-fprintf(fid, '#s \n',['TYPE =', num2str(varType(n,1)), '                   # Struture type ;1=spherical,2=exponential,3=gaussian (IT(i))']);
-fprintf(fid, '#s \n',['COV  =', num2str(varRANGE(n,4*i))  ,'               # C parameter "COV + NUGGET = 1.0" (CC(i))']);
-fprintf(fid, '#s \n',['ANG1 =', num2str(varANG(n,1))  ,'                   # Geometric anisotropy angle I (ANG1(i))']);
-fprintf(fid, '#s \n',['ANG2 =', num2str(varANG(n,2))  ,'                   # Geometric anisotropy angle II (ANG2(i))']);
-fprintf(fid, '#s \n',['ANG3 =', num2str(varANG(n,3))  ,'                   # Geometric anisotropy angle III (ANG3(i))']);
-fprintf(fid, '#s \n',['AA   =', num2str(varRANGE(n,4*i-3)),'               # Maximum horizontal range (AA(i))']);
-fprintf(fid, '#s \n',['AA1  =', num2str(varRANGE(n,4*i-2)),'               # Minimum horizontal range (AA1) ']);
-fprintf(fid, '#s \n',['AA2  =', num2str(varRANGE(n,4*i-1)),'               # Vertical range (AA2)']);
-end
-end
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','# here we define parameters for joint DSS ');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-for n=1:noZones
-fprintf(fid, '#s \n',['[BIHIST',num2str(n),']']);
-fprintf(fid, '#s \n',['USEBIHIST        = ', num2str(usebihist(1,1)),' #Use Bihist? 1-yes 0-no']);
-fprintf(fid, '#s \n',['BIHISTFILE       = ', bihistFile(n,:),'   # bihistogram file']);
-fprintf(fid, '#s \n',['NCLASSES         = ', num2str(noClasses),'                           # number of classes to use']);
-fprintf(fid, '#s \n',['AUXILIARYFILE    = ', auxVar,'                   # auxiliary image']);            
-end
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','# here we define the debug parameters - probably you wont need this');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','[DEBUG]  ');
-fprintf(fid, '#s \n','DBGLEVEL  = 1                 # 1 to 3, use higher than 1 only if REALLY needed');
-fprintf(fid, '#s \n','DBGFILE   = debug.dbg         # File to write debug');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','# here we define parameters for COVARIANCE TABLE - reduce if memory is a problem ');
-fprintf(fid, '#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid, '#s \n','[COVTAB]');
-fprintf(fid, '#s \n',['MAXCTX = ', num2str(covTab(1,1))]);
-fprintf(fid, '#s \n',['MAXCTY = ', num2str(covTab(1,2))]);
-fprintf(fid, '#s \n',['MAXCTZ = ', num2str(covTab(1,3))]);
-fprintf(fid,'#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid,'#s \n','# here we define parameters for BLOCK KRIGING - if you are not block kriging useblocks should be 0 ');
-fprintf(fid,'#s \n','#-------------------------------------------------------------------------------------#');
-fprintf(fid,'#s \n','[BLOCKS]');
-fprintf(fid,'#s \n',['USEBLOCKS  = ', num2str(useBlocks), '   # 1 use, 0 no']);
-fprintf(fid,'#s \n',['BLOCKSFILE = ', blocksFile,'           # file']);
-fprintf(fid,'#s \n',['MAXBLOCKS  = ', num2str(maxBlocks)]);
-fprintf(fid, '#s \n','[PSEUDOHARD]');
-fprintf(fid,'#s \n',['USEPSEUDO  = ', num2str(usePseudoHard), '  # 1 use, 0 no  pseudo hard data is point distributions that are simulated before all other nodes']);
-fprintf(fid,'#s \n',['PSEUDOFILE = ', pseudoHardFile,'           # file']);
-fprintf(fid,'#s \n',['PSEUDOCORR = ', num2str(pseudoCorr),'               # correct simulated value with point']);
-fclose(fid);
+cat("#-------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#        here we define parameters for joint DSS        #", file = fssd, sep = "\n", append = T)
+cat("#-------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+# create function to store vector of search pars
+bhistpar = function (usebihist = 0, bihistfile = "no file", nclasses = 0, auxfile = "no file") {
+  x = data.frame( usebihist, bihistfile, nclasses, auxfile)
+  return(x)
+}
+ 
+bhist = bhistpar ()
+
+for (j in 1:mask_zones){
+  cat(paste0("[BIHIST", j, "]"), file = fssd, sep = "\n", append = T)
+  #Use Bihist? 1-yes 0-no'
+  cat(paste0("USEBIHIST = ", bhist[1]), file = fssd, sep = "\n", append = T)
+  # bihistogram file
+  cat(paste0("BIHISTFILE = ", bhist[2]), file = fssd, sep = "\n", append = T)
+  # number of classes to use
+  cat(paste0("NCLASSES  = ", bhist[3]), file = fssd, sep = "\n", append = T)
+  # auxiliary image
+  cat(paste0("AUXILIARYFILE  = ", bhist[4]), file = fssd, sep = "\n", append = T)
+}
+
+cat("#---------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#        here we define the debug parameters - probably you wont need this        #", file = fssd, sep = "\n", append = T)
+cat("#---------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+cat("[DEBUG]", file = fssd, sep = "\n", append = T)
+# 1 to 3, use higher than 1 only if REALLY needed
+cat("DBGLEVEL = 1", file = fssd, sep = "\n", append = T)
+# File to write debug
+cat("DBGFILE   = debug.dbg ", file = fssd, sep = "\n", append = T)
+
+cat("#---------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#        here we define parameters for COVARIANCE TABLE - reduce if memory is a problem       #", file = fssd, sep = "\n", append = T)
+cat("#---------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+cat("[COVTAB]", file = fssd, sep = "\n", append = T)
+cat("MAXCTX = 201", file = fssd, sep = "\n", append = T)
+cat("MAXCTY = 201", file = fssd, sep = "\n", append = T)
+cat("MAXCTZ = 201", file = fssd, sep = "\n", append = T)
+
+cat("#--------------------------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+cat("#        here we define parameters for BLOCK KRIGING - if you are not block kriging useblocks should be 0      #", file = fssd, sep = "\n", append = T)
+cat("#--------------------------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
+
+cat("[BLOCKS]", file = fssd, sep = "\n", append = T)
+cat("USEBLOCKS = 1", file = fssd, sep = "\n", append = T)
+cat(paste0("BLOCKSFILE = ", fblk), file = fssd, sep = "\n", append = T)
+cat(paste0("MAXBLOCKS  = ", massn), file = fssd, sep = "\n", append = T)
+cat("[PSEUDOHARD]", file = fssd, sep = "\n", append = T)
+# 1 use, 0 no  pseudo hard data is point distributions that are simulated before all other nodes
+cat("USEPSEUDO = 0", file = fssd, sep = "\n", append = T)
+# file
+cat("PSEUDOFILE = 'no file'", file = fssd, sep = "\n", append = T)
+# correct simulated value with point
+cat("PSEUDOCORR = 0", file = fssd, sep = "\n", append = T)
+
 ##   RUN DSS
+
+system(temp)
+temp = paste0(getwd(), "/", sid,"/", "DSS.C.64.exe  ", getwd(), "/", sid,"/", "20200601ssdir.par" )
+system(temp)
+
 temp = [pwd,'/',inputPath,'/DSS.C.64.exe   ',inputPath,'/ssdir.par'];
 
 # hack to silent mode in command window
