@@ -1,6 +1,6 @@
 # autor: manuel ribeiro
 # data : 02/07/2020
-# ultima revisão : 29/07/2020
+# ultima revisão : 30/07/2020
 # descricao : covid-19 disease mapping with dss.exe (block-kriging)
 # email: manuel.ribeiro@tecnico.ulisboa.pt
 
@@ -21,23 +21,17 @@ wkin = paste0(getwd(), "/", foldin)
 
 # ---- folder to store outputs -----
 
+# set day of notified cases
 day = 20200601
 
 # create folder if exists is FALSE
-sid = paste0(day)
+sid = paste0("output/")
 
 # create folder for inputs
 if(!file.exists(sid)) dir.create(sid, recursive=T)  
 
 # store string with path and files prefix
-wkdir = paste0(getwd(), "/", sid, "/", sid)
-
-# create folder for outputs
-sout = paste0("output", sid)
-if(!file.exists(sout)) dir.create(sout, recursive=T)
-
-# store string with path and files prefix   
-wkdirout = paste0(getwd(), "/", sout, "/sim")
+wkout = paste0(getwd(), "/", sid)
 
 # ----- shapefile cmassa concelhos pop 2018 -----
 
@@ -173,7 +167,7 @@ namevars = names(tabnotf)
 # create file path
 not_name = "notified"
 not_nameO = paste0(not_name, ".out")
-fnot = paste0(wkin, "/", sid, not_nameO)
+fnot = paste0(wkin, "/", day, not_nameO)
 
 if (file.exists(fnot)){
   file.remove(fnot)  
@@ -310,7 +304,7 @@ massn = length(massid)
 # create file path
 blk_name = "blockdata"
 blk_nameO = paste0(blk_name,".out")
-fblk = paste0(wkin, "/", sid, blk_nameO)
+fblk = paste0(wkin, "/", day, blk_nameO)
 
 if (file.exists(fblk)){
   file.remove(fblk)  
@@ -322,7 +316,6 @@ file.create(fblk)
 # write file header
 cat(blk_name, file = fblk, sep="\n")
 cat(massn, file = fblk, sep="\n", append = T)
-cat(namevars, file = fblk, sep="\n", append = T)
 
 t0 = Sys.time()
 
@@ -351,8 +344,8 @@ for (i in 1 : massn){
   for (k in 1:ny) {
     for(l in 1:nx){
       if(gridout[k, l, 1] == id) {
-        d = paste0(gridout[k, l, 2], "\t", gridout[k, l, 3], "\t", 0)
-        blk_list[[length(blk_list)+1]] = list (d)
+        d = paste(gridout[k, l, 2], "\t", gridout[k, l, 3], "\t",  0)
+        blk_list[[length(blk_list) + 1]] = list (d)
       }
     }
   }
@@ -446,13 +439,13 @@ cat("#--------------------------------------------------------------------------
 
 cat("\n", file = fssd, append = T)
 cat("[ZONES]", file = fssd, sep = "\n", append = T)
-cat(paste0("ZONESFILE = ", fmsk), file = fssd, sep = "\n", append = T)
+cat(paste0("ZONESFILE = ", msk_nameO), file = fssd, sep = "\n", append = T)
 cat(paste0("NZONES = ", mask_zones), file = fssd, sep = "\n", append = T)
 cat("", file = fssd, sep = "\n", append = T)
 
 for (i in 1:mask_zones) {
   cat(paste0("[HARDDATA", i, "]" ), file = fssd, sep = "\n", append = T)
-  cat(paste0("DATAFILE = ", fnot ), file = fssd, sep = "\n", append = T)
+  cat(paste0("DATAFILE = ", day, not_nameO ), file = fssd, sep = "\n", append = T)
   cat(paste0("COLUMNS = ", nvars), file = fssd, sep = "\n", append = T)
   cat(paste0("XCOLUMN = ", grep("x", colnames(tabnotf))), file = fssd, sep = "\n", append = T)
   cat(paste0("YCOLUMN = ", grep("y", colnames(tabnotf))), file = fssd, sep = "\n", append = T)
@@ -480,7 +473,7 @@ cat("#                here we define parameters for the simulation              
 cat("#-------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
 cat("[SIMULATION]", file = fssd, sep = "\n", append = T)
-cat(paste0("OUTFILE = ", wkdirout), file = fssd, sep = "\n", append = T)
+cat(paste0("OUTFILE = sim"), file = fssd, sep = "\n", append = T)
 cat(paste0("NSIMS = ", nsim), file = fssd, sep = "\n", append = T)
 cat(paste0("NTRY = ", nbias), file = fssd, sep = "\n", append = T)
 cat(paste0("AVGCORR = ", biascor[1]), file = fssd, sep = "\n", append = T)
@@ -661,18 +654,18 @@ cat("#--------------------------------------------------------------------------
 
 cat("[DEBUG]", file = fssd, sep = "\n", append = T)
 # 1 to 3, use higher than 1 only if REALLY needed
-cat("DBGLEVEL = 1", file = fssd, sep = "\n", append = T)
+cat("DBGLEVEL = 2", file = fssd, sep = "\n", append = T)
 # File to write debug
-cat("DBGFILE   = debug1.dbg ", file = fssd, sep = "\n", append = T)
+cat("DBGFILE   = debug.dbg ", file = fssd, sep = "\n", append = T)
 
 cat("#---------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#        here we define parameters for COVARIANCE TABLE - reduce if memory is a problem       #", file = fssd, sep = "\n", append = T)
 cat("#---------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 
 cat("[COVTAB]", file = fssd, sep = "\n", append = T)
-cat("MAXCTX = 201", file = fssd, sep = "\n", append = T)
-cat("MAXCTY = 201", file = fssd, sep = "\n", append = T)
-cat("MAXCTZ = 201", file = fssd, sep = "\n", append = T)
+cat("MAXCTX = 10000", file = fssd, sep = "\n", append = T)
+cat("MAXCTY = 10000", file = fssd, sep = "\n", append = T)
+cat("MAXCTZ = 1", file = fssd, sep = "\n", append = T)
 
 cat("#--------------------------------------------------------------------------------------------------------------#", file = fssd, sep = "\n", append = T)
 cat("#        here we define parameters for BLOCK KRIGING - if you are not block kriging useblocks should be 0      #", file = fssd, sep = "\n", append = T)
@@ -680,7 +673,7 @@ cat("#--------------------------------------------------------------------------
 
 cat("[BLOCKS]", file = fssd, sep = "\n", append = T)
 cat("USEBLOCKS = 1", file = fssd, sep = "\n", append = T)
-cat(paste0("BLOCKSFILE = ", fblk), file = fssd, sep = "\n", append = T)
+cat(paste0("BLOCKSFILE = ", day, blk_nameO), file = fssd, sep = "\n", append = T)
 cat(paste0("MAXBLOCKS  = ", massn), file = fssd, sep = "\n", append = T)
 cat("[PSEUDOHARD]", file = fssd, sep = "\n", append = T)
 # 1 use, 0 no  pseudo hard data is point distributions that are simulated before all other nodes
@@ -692,7 +685,7 @@ cat("PSEUDOCORR = 0", file = fssd, sep = "\n", append = T)
 
 # ------ run dss ------
 
-temp = paste0(wkin,"/", "DSS.C.64.exe  ", wkin,"/", "ssdir.par" )
+temp = paste0(wkin,"/", "DSS.C.64.exe  ", wkin, "/ssdir.par" )
 system(temp)
 
 temp = [pwd,'/',inputPath,'/DSS.C.64.exe   ',inputPath,'/ssdir.par'];
