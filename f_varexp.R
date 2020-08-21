@@ -1,12 +1,12 @@
 varexp = function(dfrate, lag, nlags){
 
   # store nr of observations
-  nobs = nrow(dfrate[[3]])
+  nobs = nrow(dfrate[[1]])
   
   # experimental variogram : get data
-  rate = dfrate[[3]][,"rate"]
-  ratexy = cbind(dfrate[[3]][c("x","y")])
-  pop = dfrate[[3]][,"pop"]
+  rate = dfrate[[1]][,"rate"]
+  ratexy = cbind(dfrate[[1]][c("x","y")])
+  pop = dfrate[[1]][,"pop"]
   # store pop vector as double
   pop = as.double(pop)
   
