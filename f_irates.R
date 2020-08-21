@@ -4,7 +4,7 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
   # rate per phab habitants
   phab = 10^4 
   
-  # file
+  # file ascii tab delimited
   df = read.table(df)
 
   # variables id, x, y, z, cases, risk pop
@@ -75,7 +75,12 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
   cat(namevars, file = fnot, sep="\n", append = T)
   
   # write notification data
-  return(write.table(format(tabnotf, digits = NULL, justify = "right"),
-              file = fnot, quote = F, append = T, row.names = F, col.names = F))
-
+  write.table(format(tabnotf, digits = NULL, justify = "right"),
+              file = fnot, quote = F, append = T, row.names = F, col.names = F)
+  
+  # return data.frame object for variogram calcs
+  tabvgm = data.frame (x = cx, y = cy, rate, pop = p)
+  
+  return(tabvgm)
 }
+
