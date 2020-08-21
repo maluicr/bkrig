@@ -1,7 +1,7 @@
 
-varmodel = function (varexp ,mod = c("Exp", "Sph"), nug, ran , sill) {
+varmodel = function (varexp, mod = c("Exp", "Sph"), nug, ran , sill) {
   x = seq(1, ran , 1)
-  xmax = seq(1, max(varexp[[2]][,1]), 1)
+  xmax = seq(1, max(varexp[[2]][,"dist"]), 1)
   if (mod=="Sph") {
     model = nug + sill * (1.5 * (x / ran) - 0.5 * (x / ran)^3)
     cutoff = max(xmax) - ran
