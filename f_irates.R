@@ -80,7 +80,6 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
   
   # return data.frame object for variogram calcs
   tabvgm = data.frame (x = cx, y = cy, rate, pop = p)
-  
-  return(tabvgm)
+  return(list(date = fday, filename = fnot, rates = tabvgm))
 }
 
