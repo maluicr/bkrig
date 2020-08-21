@@ -1,5 +1,6 @@
 
-irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpop = NA, fday = "20200301"){
+
+irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpop = NA, fday = "20200301") {
 
   # rate per phab habitants
   phab = 10^4 
@@ -40,7 +41,7 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
   foldin = "input"
   
   # create folder for inputs
-  if(!file.exists(foldin)) dir.create(foldin, recursive=T)  
+  if(!file.exists(foldin)) dir.create(foldin, recursive = F)  
   
   # store string with path for input files
   wkin = paste0(getwd(), "/", foldin)
@@ -79,7 +80,8 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
               file = fnot, quote = F, append = T, row.names = F, col.names = F)
   
   # return data.frame object for variogram calcs
-  tabvgm = data.frame (x = cx, y = cy, rate, pop = p)
-  return(list(date = fday, filename = fnot, rates = tabvgm))
+  tabvgm = data.frame (oid = id, x = cx, y = cy, rate, err = error, pop = p)
+  listf = list(day = fday, name = paste0(fday, not_nameO), folder = wkin)
+  return(list(rates = tabvgm, file = listf))
 }
 
