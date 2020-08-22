@@ -8,8 +8,8 @@ blockfile = function (dfrate, gridimage){
   library(sp)
   
   # strings w/ path to store files
-  day = dfrate[[2]][1]
-  folder = dfrate[[2]][3]
+  day = as.character(dfrate[[2]][1])
+  folder = as.character(dfrate[[2]][3])
   
   grd = raster(gridimage)
   
@@ -144,6 +144,8 @@ blockfile = function (dfrate, gridimage){
     }
     data.table::fwrite(blk_list, file = fblk, append = T, sep="\n")
   }
-  
-  return(cat(paste("block file: ", fblk , "\nmask file: ", fmsk )))
+  listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy))
+  listfiles = list(day = day, names = c(paste0(day, blk_nameO),paste0(day,msk_nameO)), folder = folder)
+  return(list(gridpars = listgridpars, files = listfiles))
+  #return(cat(paste("block file: ", fblk , "\nmask file: ", fmsk )))
 }
