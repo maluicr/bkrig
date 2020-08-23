@@ -47,38 +47,6 @@ blockfile = function (dfrate, gridimage){
   gridout = array (c (grdata, grx, gry), dim =c(ny, nx , 3))
   gridout = round(gridout, 4)
   
-  # write maskfile for dss
-  
-  # create mask vector
-  mask = ifelse(stacf==-999, -1, 0)
-  mask_zones = length(unique(mask))
-  
-  # prepare data to write file 
-  nvars = 1
-  namevars = "values"
-  nval = length(mask)
-  
-  # create file path
-  msk_name = "mask"
-  msk_nameO = paste0(msk_name, ".out")
-  fmsk = paste0(folder, "/", day, msk_nameO)
-  
-  if (file.exists(fmsk)){
-    file.remove(fmsk)
-  }
-  
-  # create mask file
-  file.create(fmsk)
-  
-  # write file header
-  cat(msk_name, file = fmsk, sep="\n")
-  cat(nvars, file = fmsk, sep="\n", append = T)
-  cat(namevars, file = fmsk, sep="\n", append = T)
-  
-  # write mask data
-  write.table(mask, file = fmsk, append = T, row.names = F, col.names = F)
-  
-  
   # write blocksfile for dss
   
   # store vector grid id
@@ -144,8 +112,9 @@ blockfile = function (dfrate, gridimage){
     }
     data.table::fwrite(blk_list, file = fblk, append = T, sep="\n")
   }
+  listgrid = grd
   listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy))
-  listfiles = list(day = day, names = c(paste0(day, blk_nameO),paste0(day,msk_nameO)), folder = folder)
-  return(list(gridpars = listgridpars, files = listfiles))
+  listfile = list(day = day, names = paste0(day, blk_nameO), folder = folder)
+  return(list(grid = listgrid, gridpars = listgridpars, file = listfile))
   #return(cat(paste("block file: ", fblk , "\nmask file: ", fmsk )))
 }
