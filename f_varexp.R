@@ -1,12 +1,12 @@
 varexp = function(dfobj, lag, nlags){
 
   # store nr of observations
-  nobs = nrow(dfobj[[1]])
+  nobs = nrow(dfobj[["rates"]])
   
   # experimental variogram : get data
-  rate = dfobj[[1]][,"rate"]
-  ratexy = cbind(dfobj[[1]][c("x","y")])
-  pop = dfobj[[1]][,"pop"]
+  rate = dfobj[["rates"]][,"rate"]
+  ratexy = cbind(dfobj[["rates"]][c("x","y")])
+  pop = dfobj[["rates"]][,"pop"]
   # store pop vector as double
   pop = as.double(pop)
   
