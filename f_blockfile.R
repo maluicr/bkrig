@@ -1,5 +1,5 @@
 
-blockfile = function (dfrate, gridimage, na.value = -999){
+blockfile = function (dfobj, gridimage, na.value = -999){
   
   require("raster", "rgdal", "sp")
   
@@ -8,8 +8,8 @@ blockfile = function (dfrate, gridimage, na.value = -999){
   library(sp)
   
   # strings w/ path to store files
-  day = as.character(dfrate[[2]][1])
-  folder = as.character(dfrate[[2]][3])
+  day = as.character(dfobj[[2]][1])
+  folder = as.character(dfobj[[2]][3])
   
   grd = raster(gridimage)
   
@@ -80,9 +80,9 @@ blockfile = function (dfrate, gridimage, na.value = -999){
     nc = sum(gridout[,,1] == id)
     
     # get vectors from irates function  
-    oid = dfrate[[1]][, "oid"]
-    rate = dfrate[[1]][, "rate"]
-    err = dfrate[[1]][, "err"]
+    oid = dfobj[[1]][, "oid"]
+    rate = dfobj[[1]][, "rate"]
+    err = dfobj[[1]][, "err"]
     tab = data.frame(oid, rate, err)
     
     # store rate and error
@@ -115,5 +115,5 @@ blockfile = function (dfrate, gridimage, na.value = -999){
   listgrid = grd
   listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy), NAs = na.value)
   listfile = list(day = day, names = paste0(day, blk_nameO), folder = folder)
-  return(list(gridpars = listgridpars, outfile = listfile, ingrid = listgrid))
+  return(list(gridpars = listgridpars, outfile = stacf , block.file = listfile, ingrid = listgrid))
 }
