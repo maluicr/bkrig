@@ -1,5 +1,5 @@
 
-blockfile = function (dfrate, gridimage){
+blockfile = function (dfrate, gridimage, na.value = -999){
   
   require("raster", "rgdal", "sp")
   
@@ -36,7 +36,7 @@ blockfile = function (dfrate, gridimage){
   stacf = stac3$values
   
   # set NAs values to -999
-  nas = -999
+  nas = na.value
   stacf[is.na(stacf)] = nas
   
   # create array for blockfile
@@ -113,8 +113,7 @@ blockfile = function (dfrate, gridimage){
     data.table::fwrite(blk_list, file = fblk, append = T, sep="\n")
   }
   listgrid = grd
-  listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy))
+  listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy), NAs = na.value)
   listfile = list(day = day, names = paste0(day, blk_nameO), folder = folder)
-  return(list(grid = listgrid, gridpars = listgridpars, file = listfile))
-  #return(cat(paste("block file: ", fblk , "\nmask file: ", fmsk )))
+  return(list(gridpars = listgridpars, outfile = listfile, ingrid = listgrid))
 }
