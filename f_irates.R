@@ -80,7 +80,7 @@ irates = function(df = NA, fid = NA, fx = NA, fy = NA, fz = NA, fcases = NA, fpo
               file = fnot, quote = F, append = T, row.names = F, col.names = F)
   
   # return data.frame object for variogram calcs
-  tabvgm = data.frame (oid = id, x = cx, y = cy, rate, err = error, pop = p)
+  tabvgm = data.frame (oid = id, x = cx, y = cy, z = cz, rate, err = error, pop = p)
   listf = list(day = fday, name = paste0(fday, not_nameO), folder = wkin)
   return(list(rates = tabvgm, file = listf))
 }
