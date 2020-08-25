@@ -1,14 +1,15 @@
 maskfile = function(blockobj){
   
-  obj = blockobj[["outfile"]]
-  na = blockobj[["gridpars"]]["NAs"]
-  day = as.character(blockobj[["block.file"]]["day"])
-  folder = as.character(blockobj[["block.file"]]["folder"])
+  obj = unlist(blockobj[["outgrid"]]["values"], use.names = F)
+  na = unlist(blockobj[["gridpars"]]["NAs"], use.names = F)
+  day = as.character(blockobj[["file"]]["day"])
+  folder = as.character(blockobj[["file"]]["folder"])
     
   # write maskfile for dss
   
   # create mask vector
   mask = ifelse(obj == na, -1, 0)
+  val = unique(mask)
   mask_zones = length(unique(mask))
   
   # prepare data to write file 
@@ -36,7 +37,10 @@ maskfile = function(blockobj){
   # write mask data
   write.table(mask, file = fmsk, append = T, row.names = F, col.names = F)
   
+  listf = list(day = day, name = paste0(day, msk_nameO), folder = folder)
+  listz = list(nzones = mask_zones, zoneval = val)
   
+  return(list(file = listf, zones = listz))
 }
 
 
