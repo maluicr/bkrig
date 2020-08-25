@@ -131,12 +131,13 @@ names(dgs) = c("nome_cc", "casos")
 # merge dgs with pop data
 tab_all = merge(x = pop, y = dgs, by = c("nome_cc"), all.x = TRUE)
 
-# crude rates
-tab_all$rate = phab * tab_all$casos / tab_all$popres18
+# crude rates (exclude rows w/ cases=NA)
+tab_all_NAs = subset(tab_all, tab_all$casos!="NA")
+tab_all_NAs$rate = phab * tab_all_NAs$casos / tab_all_NAs$popres18
 
 # compute overall mean rate
-pop_tot = sum(tab_all$popres18, na.rm = T)
-m = sum(tab_all$rate * tab_all$popres18, na.rm = T) / pop_tot
+pop_tot_NAs = sum(tab_all_NAs$popres18, na.rm = T)
+m = sum(tab_all_NAs$rate * tab_all_NAs$popres18, na.rm = T) / pop_tot_NAs
 
 # error variance term (m/n_i)
 tab_all$error = m / tab_all$popres18
