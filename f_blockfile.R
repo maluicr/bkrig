@@ -113,7 +113,8 @@ blockfile = function (dfobj, gridimage, na.value = -999){
     data.table::fwrite(blk_list, file = fblk, append = T, sep="\n")
   }
   listgrid = grd
-  listgridpars = list(nodes = c(ny, nx), resolution = c(resx, resy), origin = c(ox, oy), NAs = na.value)
-  listfile = list(day = day, names = paste0(day, blk_nameO), folder = folder)
-  return(list(gridpars = listgridpars, outfile = stacf , block.file = listfile, ingrid = listgrid))
+  listgridpars = list(nodes = c(nx, ny), resolution = c(resx, resy), origin = c(ox, oy), NAs = na.value)
+  listfile = list(day = day, name = paste0(day, blk_nameO), folder = folder)
+  listgridout = list(values = stacf, idblock = massid, nblock = massn)
+  return(list(gridpars = listgridpars, outgrid = listgridout , file = listfile, ingrid = listgrid))
 }
