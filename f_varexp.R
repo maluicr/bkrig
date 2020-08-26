@@ -9,6 +9,8 @@ varexp = function(dfobj, lag, nlags){
   pop = dfobj[["rates"]][,"pop"]
   # store pop vector as double
   pop = as.double(pop)
+  m = dfobj[["mrisk"]]
+  
   
   # weighted sample variance for sill estimation
   # no ref about this sill estimation
