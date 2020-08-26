@@ -1,15 +1,17 @@
 
 blockfile = function (dfobj, gridimage, na.value = -999){
   
-  require("raster", "rgdal", "sp")
-  
+  if (!"raster" %in% installed.packages()) install.packages("raster")
+  if (!"rgdal" %in% installed.packages()) install.packages("rgdal")
+  if (!"sp" %in% installed.packages()) install.packages("sp")
+
   library(raster)
   library(rgdal)
   library(sp)
   
   # strings w/ path to store files
-  day = as.character(dfobj[[2]][1])
-  folder = as.character(dfobj[[2]][3])
+  day = as.character(dfobj[["file"]]["day"])
+  folder = as.character(dfobj[["file"]]["folder"])
   
   grd = raster(gridimage)
   
@@ -100,7 +102,7 @@ blockfile = function (dfobj, gridimage, na.value = -999){
     
     # data.table::fwrite
     blk_list = list()
-    require("data.table")
+    if (!"data.table" %in% installed.packages()) install.packages("data.table")
     library("data.table")
     for (k in 1:ny) {
       for(l in 1:nx){
