@@ -1,2 +1,22 @@
 
 b-krig/
+*.cpg
+gis/cc_pt_cmassa_fr_popres.dbf
+gis/cc_pt_cmassa_fr_popres.prj
+gis/cc_pt_cmassa_fr_popres.sbn
+gis/cc_pt_cmassa_fr_popres.sbx
+gis/cc_pt_cmassa_fr_popres.shp
+gis/cc_pt_cmassa_fr_popres.shp.xml
+gis/cc_pt_cmassa_fr_popres.shx
+gis/grid2k.out
+gis/grid2k.tfw
+gis/grid2k.tif
+gis/grid2k.tif.aux.xml
+gis/grid2k.tif.ovr
+input/20200302notified.out
+input/20200315blockdata.out
+input/20200315mask.out
+input/20200315notified.out
+input/20200315ssdir.par
+input/DSS.C.64.exe
+debug.dbg
