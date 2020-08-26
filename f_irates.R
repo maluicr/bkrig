@@ -17,23 +17,23 @@ irates = function(df = NA, id = NA, x = NA, y = NA, z = NA,
   c = df[, cases]
   p = df[, pop]
   
-  # compute overall mean rate (exclude rows w/ cases = NA)
-  df_NAs = subset(df, df[, cases]!= "NA")
-  df_NAs$rates = phab * df_NAs[, cases] / df_NAs[, pop]
-  pop_tot_NAs = sum(df_NAs[, pop])
-  m = sum(df_NAs[, rates] * df_NAs[, pop]) / pop_tot_NAs
+  # compute overall mean rate (exclude rows w/ cases = NAs)
+  dfnas = subset(df, df[, cases]!= "NA")
+  dfnas$rates = phab * dfnas[, cases] / dfnas[, pop]
+  poptnas = sum(dfnas[, pop])
+  m = sum(dfnas[, "rates"] * dfnas[, pop]) / poptnas
   
   # error variance term (m/n_i)
   error = m / p
   
-  # NA cases set to 2 cases
+  # NA cases set to casesNA
   df[, cases] = ifelse(is.na(df[, cases]), casesNA, df[, cases])
   c = df[, cases]
   
   # recalculate crude rates
   rate = phab * c / p
   
-  tab = data.frame (id, x = x, y = y, z = z, rate, error)
+  tab = data.frame (id, x = cx, y = cy, z = cz, rate, error)
   
   # cases file for dss
   
@@ -90,7 +90,8 @@ irates = function(df = NA, id = NA, x = NA, y = NA, z = NA,
   # return data.frame object for variogram calcs
   tabvgm = data.frame (oid = id, x = cx, y = cy, z = cz, rate, err = error, pop = p)
   listf = list(day = day, name = paste0(day, not_nameO), folder = wkin)
-  listpars = list(xcolumn = xcol, ycolumn = ycol, zcolumn = zcol, varcol = varcol, minval = minval, maxval = maxval)
-  return(list(rates = tabvgm, file = listf, ssdirpars = listpars))
+  listpars = list(nvars = nvars, xcolumn = xcol, ycolumn = ycol, zcolumn = zcol, 
+                  varcol = varcol, minval = minval, maxval = maxval)
+  return(list(rates = tabvgm, mrisk = m, file = listf, ssdirpars = listpars))
 }
 
