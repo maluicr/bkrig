@@ -1,4 +1,18 @@
 
+
+# ----- description -----
+
+# function to transform simulations .out - .grd (grid, raster)
+
+# as input you should provide the list returned by funtion blockfile().
+
+# ----- arguments ------
+
+# blockobj, string, name of list, output of function blockfile() 
+# emaps, logical, if TRUE computes e-type and uncertainty maps, plots e-type map 
+
+# ------ function ------
+
  outraster = function (blockobj, emaps = T) {
    library(raster)
    
