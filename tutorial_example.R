@@ -13,6 +13,7 @@ source("f3_maskfile.R", echo = T)
 source("f4_varexp.R", echo = T)
 source("f5_varmodel.R", echo = T)
 source("f6_ssdpars.R", echo = T)
+source("f7_outraster.R", echo = T)
 
 # create a data frame from covid19 data table
 covid = read.table("covid19_data.txt", header = TRUE, sep = "\t", dec = ".")
@@ -22,7 +23,7 @@ rates = irates(df = covid, oid = "id_region", x = "xcoord", y = "ycoord", z = "z
                cases = "ncases", pop = "poprisk", casesNA = 2, day = "20200601")
 
 # create block file
-block = blockfile(rates, "gis/grid2k.tif")
+block = blockfile(rates, "grid2k.tif")
 # plot grid input
 plot(block$ingrid)
 
@@ -45,3 +46,6 @@ lines(vmod[["fittedval"]])
 # run ssdir.par
 ssdpars(blockobj = block, maskobj = mask, dfobj = rates, varmobj = vmod, 
         simulations = 5, radius1 = 60000, radius2 = 60000)
+
+# export .out maps to raster
+outraster(block, emaps = T)
