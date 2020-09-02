@@ -13,7 +13,7 @@
 
 # ------ function ------
 
- outraster = function (blockobj, emaps = T) {
+ outraster = function (blockobj, grids = F, emaps = T) {
    library(raster)
    
    day = blockobj[["file"]]["day"]
@@ -29,7 +29,7 @@
 
    # store number of simulations
    nsims = length(dss_list[["simnames"]])
-
+   ssims = stack()
 
    # loop each simulation
    for (k in 1:nsims){
@@ -71,18 +71,20 @@
      r = raster(out03)
      extent(r)=c(xmin, xmax, ymin, ymax)
      projection(r) = CRS(crsname)
-     writeRaster(r, filename = paste0(folder,"/", day, "sim_", k), overwrite = TRUE)
+     
+     if(grids == T){
+       writeRaster(r, filename = paste0(folder,"/", day, "sim_", k), overwrite = TRUE)
+       }
+     ssims = stack(ssims, r)
    }
+   etype = calc(ssims, fun = mean, na.rm = T)
+   uncer = calc(ssims, fun = sd, na.rm = T)
    if (emaps == T){
-     f = list.files(path = paste0(folder, "/"), pattern = "\\.grd$")
-     s = stack(paste0(folder, "/", f))
-     etype = calc(s, fun = mean, na.rm = T)
-     uncert = calc(s, fun = sd, na.rm = T)
      writeRaster(etype, filename = paste0(folder, "/", day, "etype"), overwrite = TRUE)
-     writeRaster(uncert, filename = paste0(folder, "/", day, "uncertainty"), overwrite = TRUE)
-     return(spplot(etype))
+     writeRaster(uncer, filename = paste0(folder, "/", day, "uncertainty"), overwrite = TRUE)
    }
-  return(cat("rasters created"))
+   listmaps = list(simulations = ssims, etype = etype, uncertainty = uncer )
+   return(listmaps)
    }
 
 
