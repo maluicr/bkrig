@@ -1,6 +1,6 @@
 
 # author: m ribeiro; 
-# date : 26-08-20; last revision : 27-08-2020
+# date : 26-08-20; last revision : 03-09-2020
 # email: manuel.ribeiro@tecnico.ulisboa.pt
 
 # Please note: some packages may need to be installed!
@@ -19,7 +19,7 @@ source("f7_outraster.R", echo = T)
 covid = read.table("covid19_data.txt", header = TRUE, sep = "\t", dec = ".")
 
 # compute rates and error variance
-rates = irates(df = covid, oid = "id_region", x = "xcoord", y = "ycoord", z = "zcoord", 
+rates = irates(dfobj = covid, oid = "id_region", xx = "xcoord", yy = "ycoord", zz = "zcoord", 
                cases = "ncases", pop = "poprisk", casesNA = 2, day = "20200601")
 
 # create block file
@@ -48,4 +48,11 @@ ssdpars(blockobj = block, maskobj = mask, dfobj = rates, varmobj = vmod,
         simulations = 5, radius1 = 60000, radius2 = 60000)
 
 # export .out maps to raster
-outraster(block, emaps = T)
+maps = outraster(block, emaps = T)
+
+# plot simulations
+spplot(maps[["simulations"]])
+
+# plot etype and uncertainty
+spplot(maps[["etype"]])
+spplot(maps[["uncertainty"]])
