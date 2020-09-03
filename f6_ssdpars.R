@@ -9,10 +9,10 @@
 
 # ----- arguments ------
 
-# blockobj, character, name of list, output of function blockfile()
-# maskobj, character, name of list, output of function maskfile()
-# dfobj, character, name of list, output of function irates()
-# varmobj,character, name of list, output of function varmodel()
+# blockobj, string, name of list, output of function blockfile()
+# maskobj, string, name of list, output of function maskfile()
+# dfobj, string, name of list, output of function irates()
+# varmobj, string, name of list, output of function varmodel()
 # simulations, numeric, number of simulations
 # nrbias, numeric, nr simulations for bias correction
 # biascor, num vector, flag for (mean, variance) correction (yes = 1, no = 0)

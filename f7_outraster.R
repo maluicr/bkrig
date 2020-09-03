@@ -9,7 +9,7 @@
 
 # ----- arguments ------
 
-# The arguments of the function:
+# the arguments of the function are:
   
 # blockobj, string,  name of list, output of function blockfile(),
 # if grids = T,  saves simulated maps in 'native' raster package format .grd,

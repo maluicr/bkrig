@@ -12,10 +12,10 @@
 # ----- arguments ------
 
 # dfobj, string, dataframe name with covid19 data
-# id, character, field name for region id
-# x, character, field name for x-coordinates 
-# y, character, field name for y-coordinates 
-# z, character, field name for z-coordinates 
+# oid, character, field name for region id
+# xx, character, field name for x-coordinates 
+# yy, character, field name for y-coordinates 
+# zz, character, field name for z-coordinates 
 # cases, character, field name for number of cases 
 # pop, character, field name for population size
 # casesNA, numeric, an integer used to replace rows with cases = NA,

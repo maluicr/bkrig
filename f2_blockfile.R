@@ -3,7 +3,7 @@
 
 # function for block data
 
-# as input you should provide a raster file (e.g. tiff) 
+# as input you should provide a georeferenced grid file
 # with id region values at simulation locations, and 
 # a list returned by funtion irates().
 
