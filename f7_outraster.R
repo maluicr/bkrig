@@ -2,14 +2,20 @@
 
 # ----- description -----
 
-# function to transform simulations .out - .grd (grid, raster)
+# function outraster() read simulation files (.out) returned by ssdpars() and 
+# returns a list with simulated maps (rasterstack object), e-type and uncertainty maps (rasterlayers). 
 
 # as input you should provide the list returned by funtion blockfile().
 
 # ----- arguments ------
 
-# blockobj, string, name of list, output of function blockfile() 
-# emaps, logical, if TRUE computes e-type and uncertainty maps, plots e-type map 
+# The arguments of the function:
+  
+# blockobj, string,  name of list, output of function blockfile(),
+# if grids = T,  saves simulated maps in 'native' raster package format .grd,
+# if emaps = T (default), saves e-type and uncertainty maps in format .grd.
+
+# all .grd (and respective .gri) files are stored in input folder.
 
 # ------ function ------
 
