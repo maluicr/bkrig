@@ -30,6 +30,7 @@
    # store number of simulations
    nsims = length(dss_list[["simnames"]])
    ssims = stack()
+   namesims = c(rep(0, nsims))
 
    # loop each simulation
    for (k in 1:nsims){
@@ -74,10 +75,13 @@
      
      if(grids == T){
        writeRaster(r, filename = paste0(folder,"/", day, "sim_", k), overwrite = TRUE)
-       }
+     }
+     # add layer to stack
      ssims = stack(ssims, r)
+     # change layer name
+     names(ssims[[k]]) = paste0("sim_", k) 
    }
-   etype = calc(ssims, fun = mean, na.rm = T)
+   etype = calc(ssims, fun = function(x) {quantile(x, probs = .5,na.rm=TRUE)})
    uncer = calc(ssims, fun = sd, na.rm = T)
    if (emaps == T){
      writeRaster(etype, filename = paste0(folder, "/", day, "etype"), overwrite = TRUE)
