@@ -95,7 +95,7 @@ varexp = function(dfobj, lag, nlags){
     gammah[k] = num_gh[k]/(2*den_gh[k])
     mh[k] = dh[k] / nh[k]
   }
-  v = data.frame(dist = mh,  semivariance = gammah)
+  v = data.frame(dist = mh,  semivariance = gammah, npairs = nh)
   list(weightsvar = wsvar, semivar = v)
 }  
  
