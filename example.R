@@ -6,6 +6,9 @@
 # description: package blockdss to compute block kriging covid-19 (Azevedo et al, 2020)
 
 library(blockdss)
+library(sp)
+library(raster)
+
 data(ptdata)
 data(ptgrid)
 
@@ -31,15 +34,16 @@ mask = maskfile(block)
 # compute experimental variogram
 vexp = varexp(rates, lag = 7000, nlags = 25)
 
-# compute theoretical variogram
-vmod = varmodel(vexp, mod = "sph", nug = 0, ran = 35000, sill = vexp[["weightsvar"]])
-
 # plot experimental variogram
 plot(vexp[["semivar"]][1:2], ylab = expression(paste(gamma, "(h)")), xlab = "h (in m)", main = "Semi-variogram") 
 
 # add sill
 abline(h = vexp[["weightsvar"]], col ="red", lty = 2)
-# add theoretical model
+
+# compute theoretical variogram
+vmod = varmodel(vexp, mod = "sph", nug = 0, ran = 35000, sill = vexp[["weightsvar"]])
+
+# add fitted variogram
 lines(vmod[["fittedval"]]) 
 
 # run ssdir.par
