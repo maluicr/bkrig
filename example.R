@@ -3,10 +3,7 @@
 # date : 26-08-20; last revision : 21-03-2022
 # email: manuel.ribeiro@tecnico.ulisboa.pt
 
-# Please note: some packages may need to be installed!
-
-# script example to compute block kriging covid-19 (Azevedo et al, 2020)
-
+# description: package blockdss to compute block kriging covid-19 (Azevedo et al, 2020)
 
 library(blockdss)
 data(ptdata)
